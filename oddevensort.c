@@ -3,7 +3,7 @@
 #include <mpi.h>
 #include <time.h>
 
-#define TAM 16
+#define TAM 32
 
 int A[TAM];
 
@@ -101,20 +101,21 @@ int main(int argc, char const *argv[])
 
 	int ini = my_rank*TAM/comm_sz;
     int end = (my_rank+1)*TAM/comm_sz;
-    int pre = (ini+TAM-(TAM/comm_sz))%TAM;
+    //int pre = (ini+TAM-(TAM/comm_sz))%TAM;
+    int pos = (end-ini)+end;
 
-    printf("Proceso %d tiene pre=%d , ini=%d , end=%d\n", my_rank,pre,ini,end);
+    printf("Proceso %d tiene pos=%d , ini=%d , end=%d\n", my_rank,pos,ini,end);
 
     MPI_Scatter (A, TAM/comm_sz, MPI_INT, &A[ini], TAM/comm_sz, MPI_INT, 0, MPI_COMM_WORLD);
     qs(A,ini,end-1);
     MPI_Gather(&A[ini], TAM/comm_sz, MPI_INT, A, TAM/comm_sz, MPI_INT,0, MPI_COMM_WORLD);
 
-    /*for (int phase = 0; phase < comm_sz; ++phase)
+    for (int phase = 0; phase < comm_sz; ++phase)
     {
-    	MPI_Scatter (A, TAM/comm_sz, MPI_INT, &A[ini], TAM/comm_sz, MPI_INT, 0, MPI_COMM_WORLD);
+    	//MPI_Scatter (A, TAM/comm_sz, MPI_INT, &A[ini], TAM/comm_sz, MPI_INT, 0, MPI_COMM_WORLD);
     	if(phase%2==0)
     	{
-    		if(my_rank%2!=0)
+    		/*if(my_rank%2!=0)
     		{
     			MPI_Send(&A[ini],TAM/comm_sz,MPI_INT,(my_rank+1)%comm_sz,0,MPI_COMM_WORLD);
 
@@ -125,11 +126,18 @@ int main(int argc, char const *argv[])
     			MPI_Recv(&A[pre],TAM/comm_sz,MPI_INT,(my_rank+comm_sz-1)%comm_sz,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
     			qs(A,pre,end-1);
     			MPI_Send(&A[pre],TAM/comm_sz,MPI_INT,(my_rank+comm_sz-1)%comm_sz,0,MPI_COMM_WORLD);
+    		}*/
+
+    		if (my_rank%2==0 && pos<=comm_sz)
+    		{
+    			MPI_Scatter (A, TAM*2/comm_sz, MPI_INT, &A[ini], TAM/comm_sz, MPI_INT, 0, MPI_COMM_WORLD);
+    			qs(A,ini,pos-1);
+    			MPI_Allgather(&A[ini], TAM*2/comm_sz, MPI_INT, A, TAM/comm_sz, MPI_INT, MPI_COMM_WORLD);
     		}
     	}
     	else
     	{
-    		if(my_rank%2!=0)
+    		/*if(my_rank%2!=0)
     		{
     			MPI_Recv(&A[pre],TAM/comm_sz,MPI_INT,(my_rank+comm_sz-1)%comm_sz,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
 				qs(A,pre,end-1);
@@ -140,10 +148,17 @@ int main(int argc, char const *argv[])
 				MPI_Send(&A[ini],TAM/comm_sz,MPI_INT,(my_rank+1)%comm_sz,0,MPI_COMM_WORLD);
 
 				MPI_Recv(&A[ini],TAM/comm_sz,MPI_INT,(my_rank+1)%comm_sz,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+			}*/
+
+			if (my_rank%2!=0 && pos<=comm_sz)
+			{
+				MPI_Scatter (A, TAM*2/comm_sz, MPI_INT, &A[ini], TAM/comm_sz, MPI_INT, 0, MPI_COMM_WORLD);
+    			qs(A,ini,pos-1);
+    			MPI_Allgather(&A[ini], TAM*2/comm_sz, MPI_INT, A, TAM/comm_sz, MPI_INT, MPI_COMM_WORLD);
 			}
     	}
-    	MPI_Gather(&A[ini], TAM/comm_sz, MPI_INT, A, TAM/comm_sz, MPI_INT,0, MPI_COMM_WORLD);
-    }*/
+    	//MPI_Gather(&A[ini], TAM/comm_sz, MPI_INT, A, TAM/comm_sz, MPI_INT,0, MPI_COMM_WORLD);
+    }
 
     if (my_rank==0)
     	print();

@@ -6,13 +6,13 @@
 
 #define TAM 16
 
-int A[TAM][TAM], B[TAM][1], C[TAM][1];
+int A[TAM][TAM], B[TAM], C[TAM];
 
 void llenar()
 {
     for (int i=0; i<TAM; i++)
     {
-        B[i][0] = rand()%100;
+        B[i] = rand()%100;
         for (int j=0; j<TAM; j++)
             A[i][j] = rand()%100;
     }
@@ -24,7 +24,7 @@ void print()
     {
         for (int j=0; j<TAM; ++j)
             printf("%d\t", A[i][j]);
-        printf("|\t%d\n", B[i][0]);
+        printf("|\t%d\n", B[i]);
         printf("\n");
     }
     printf("\n");
@@ -64,7 +64,7 @@ int main(int argc, char const *argv[])
         	C[i]+=A[i][j]*B[j];
     }
 
-    MPI_Reduce(C,C, TAM, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Allreduce(C,C, TAM, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 
     if (my_rank==0)
         printRes();

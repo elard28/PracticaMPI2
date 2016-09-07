@@ -3,11 +3,11 @@
 #include <time.h>
 #include <mpi.h>
 
-//#define TAM 1024
+#define TAM 1024
 //#define TAM 2048
 //#define TAM 4096
 //#define TAM 8192
-#define TAM 16384
+//#define TAM 16384
 
 int A[TAM][TAM], B[TAM], C[TAM];
 

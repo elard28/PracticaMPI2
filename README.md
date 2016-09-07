@@ -43,3 +43,5 @@ Con 2 procesos demora 2302.761 milisegundos
 Con 4 procesos demora 1148.201 milisegundos
 Con 8 procesos demora 973.824 milisegundos
 Con 16 procesos demora 906.025 milisegundos
+
+Conforme van aumentando el numero de procesos la eficiencia va disminuyendo, se fija que con mas procesos que haya, cada proceso es mas lento. La eficiencia disminuye aun mas conforme vayan incrementando la cantidad de datos lo que lo hace debilmente escalable.
