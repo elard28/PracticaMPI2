@@ -64,16 +64,16 @@ void quicksort(int list[],int n)
 		if (phase % 2 == 0) 
 		{ // Even phase 
 			for (i = 1; i < n; i += 2)
-				if (a[i − 1] > a[i]) 
+				if (a[i - 1] > a[i]) 
 				{
 					temp = a[i];
-					a[i] = a[i − 1];
-					a[i − 1] = temp;
+					a[i] = a[i - 1];
+					a[i - 1] = temp;
 				}
 		} 
 		else 
 		{ // Odd phase 
-			for (i = 1; i < n − 1; i += 2)
+			for (i = 1; i < n - 1; i += 2)
 				if (a[i] > a[i+1]) 
 				{
 					temp = a[i];
@@ -101,10 +101,10 @@ int main(int argc, char const *argv[])
 
 	int ini = my_rank*TAM/comm_sz;
     int end = (my_rank+1)*TAM/comm_sz;
-    //int pre = (my_rank-1)*TAM/comm_sz;
+    int pre = (my_rank-1)*TAM/comm_sz;
     int pos = (my_rank+2)*TAM/comm_sz;
 
-    printf("Proceso %d tiene pos=%d , ini=%d , end=%d\n", my_rank,pos,ini,end);
+    printf("Proceso %d tiene pre=%d , ini=%d , end=%d , pos=%d\n", my_rank,pre,ini,end,pos);
 
     MPI_Scatter (A, TAM/comm_sz, MPI_INT, &A[ini], TAM/comm_sz, MPI_INT, 0, MPI_COMM_WORLD);
     qs(A,ini,end-1);
@@ -112,50 +112,54 @@ int main(int argc, char const *argv[])
 
     for (int phase = 0; phase < comm_sz; ++phase)
     {
-    	//MPI_Scatter (A, TAM/comm_sz, MPI_INT, &A[ini], TAM/comm_sz, MPI_INT, 0, MPI_COMM_WORLD);
+    	MPI_Scatter(A, TAM/comm_sz, MPI_INT, &A[ini], TAM/comm_sz, MPI_INT, 0, MPI_COMM_WORLD);
     	if(phase%2==0)
     	{
-    		/*if(my_rank%2!=0 && pre>0)
+    		if(my_rank%2!=0)
     		{
     			MPI_Send(&A[ini],TAM/comm_sz,MPI_INT,(my_rank+1)%comm_sz,0,MPI_COMM_WORLD);
 
-    			MPI_Recv(&A[ini],TAM/comm_sz,MPI_INT,(my_rank+1)%comm_sz,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+    			//MPI_Recv(&A[ini],TAM/comm_sz,MPI_INT,(my_rank+1)%comm_sz,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
     		}
-    		else
+    		else if(pre>=0)
     		{
     			MPI_Recv(&A[pre],TAM/comm_sz,MPI_INT,(my_rank+comm_sz-1)%comm_sz,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
     			qs(A,pre,end-1);
-    			MPI_Send(&A[pre],TAM/comm_sz,MPI_INT,(my_rank+comm_sz-1)%comm_sz,0,MPI_COMM_WORLD);
-    		}*/
+    			//MPI_Send(&A[pre],TAM/comm_sz,MPI_INT,(my_rank+comm_sz-1)%comm_sz,0,MPI_COMM_WORLD);
+    			MPI_Gather(&A[pre], TAM*2/comm_sz, MPI_INT, A, TAM*2/comm_sz, MPI_INT,0, MPI_COMM_WORLD);
+    		}
+    		else MPI_Gather(&A[ini], TAM/comm_sz, MPI_INT, A, TAM/comm_sz, MPI_INT,0, MPI_COMM_WORLD);
 
-    		if (my_rank%2==0 && pos<=comm_sz)
+    		/*if (my_rank%2==0 && pos<=TAM)
     		{
     			MPI_Scatter (A, TAM*2/comm_sz, MPI_INT, &A[ini], TAM/comm_sz, MPI_INT, 0, MPI_COMM_WORLD);
     			qs(A,ini,pos-1);
     			MPI_Allgather(&A[ini], TAM*2/comm_sz, MPI_INT, A, TAM/comm_sz, MPI_INT, MPI_COMM_WORLD);
-    		}
+    		}*/
     	}
     	else
     	{
-    		/*if(my_rank%2!=0 && pre>0)
+			if(my_rank%2==0)
+    		{
+    			MPI_Send(&A[ini],TAM/comm_sz,MPI_INT,(my_rank+1)%comm_sz,0,MPI_COMM_WORLD);
+
+    			//MPI_Recv(&A[ini],TAM/comm_sz,MPI_INT,(my_rank+1)%comm_sz,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+    		}
+    		else if(pos<=TAM)
     		{
     			MPI_Recv(&A[pre],TAM/comm_sz,MPI_INT,(my_rank+comm_sz-1)%comm_sz,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
-				qs(A,pre,end-1);
-				MPI_Send(&A[pre],TAM/comm_sz,MPI_INT,(my_rank+comm_sz-1)%comm_sz,0,MPI_COMM_WORLD);
+    			qs(A,pre,end-1);
+    			//MPI_Send(&A[pre],TAM/comm_sz,MPI_INT,(my_rank+comm_sz-1)%comm_sz,0,MPI_COMM_WORLD);
+    			MPI_Gather(&A[pre], TAM*2/comm_sz, MPI_INT, A, TAM*2/comm_sz, MPI_INT,0, MPI_COMM_WORLD);
     		}
-			else
-			{
-				MPI_Send(&A[ini],TAM/comm_sz,MPI_INT,(my_rank+1)%comm_sz,0,MPI_COMM_WORLD);
-
-				MPI_Recv(&A[ini],TAM/comm_sz,MPI_INT,(my_rank+1)%comm_sz,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
-			}*/
-
-			if (my_rank%2!=0 && pos<=comm_sz)
+    		else MPI_Gather(&A[ini], TAM/comm_sz, MPI_INT, A, TAM/comm_sz, MPI_INT,0, MPI_COMM_WORLD);
+    		
+			/*if (my_rank%2!=0 && pos<=TAM)
 			{
 				MPI_Scatter (A, TAM*2/comm_sz, MPI_INT, &A[ini], TAM/comm_sz, MPI_INT, 0, MPI_COMM_WORLD);
     			qs(A,ini,pos-1);
     			MPI_Allgather(&A[ini], TAM*2/comm_sz, MPI_INT, A, TAM/comm_sz, MPI_INT, MPI_COMM_WORLD);
-			}
+			}*/
     	}
     	//MPI_Gather(&A[ini], TAM/comm_sz, MPI_INT, A, TAM/comm_sz, MPI_INT,0, MPI_COMM_WORLD);
     }
