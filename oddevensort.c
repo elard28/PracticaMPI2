@@ -129,13 +129,6 @@ int main(int argc, char const *argv[])
     			MPI_Gather(&A[pre], TAM*2/comm_sz, MPI_INT, A, TAM*2/comm_sz, MPI_INT,0, MPI_COMM_WORLD);
     		}
     		else MPI_Gather(&A[ini], TAM/comm_sz, MPI_INT, A, TAM/comm_sz, MPI_INT,0, MPI_COMM_WORLD);
-
-    		/*if (my_rank%2==0 && pos<=TAM)
-    		{
-    			MPI_Scatter (A, TAM*2/comm_sz, MPI_INT, &A[ini], TAM/comm_sz, MPI_INT, 0, MPI_COMM_WORLD);
-    			qs(A,ini,pos-1);
-    			MPI_Allgather(&A[ini], TAM*2/comm_sz, MPI_INT, A, TAM/comm_sz, MPI_INT, MPI_COMM_WORLD);
-    		}*/
     	}
     	else
     	{
@@ -145,7 +138,7 @@ int main(int argc, char const *argv[])
 
     			//MPI_Recv(&A[ini],TAM/comm_sz,MPI_INT,(my_rank+1)%comm_sz,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
     		}
-    		else if(pos<=TAM)
+    		else if(pos<=TAM && pre>=0)
     		{
     			MPI_Recv(&A[pre],TAM/comm_sz,MPI_INT,(my_rank+comm_sz-1)%comm_sz,0,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
     			qs(A,pre,end-1);
@@ -153,15 +146,8 @@ int main(int argc, char const *argv[])
     			MPI_Gather(&A[pre], TAM*2/comm_sz, MPI_INT, A, TAM*2/comm_sz, MPI_INT,0, MPI_COMM_WORLD);
     		}
     		else MPI_Gather(&A[ini], TAM/comm_sz, MPI_INT, A, TAM/comm_sz, MPI_INT,0, MPI_COMM_WORLD);
-    		
-			/*if (my_rank%2!=0 && pos<=TAM)
-			{
-				MPI_Scatter (A, TAM*2/comm_sz, MPI_INT, &A[ini], TAM/comm_sz, MPI_INT, 0, MPI_COMM_WORLD);
-    			qs(A,ini,pos-1);
-    			MPI_Allgather(&A[ini], TAM*2/comm_sz, MPI_INT, A, TAM/comm_sz, MPI_INT, MPI_COMM_WORLD);
-			}*/
+
     	}
-    	//MPI_Gather(&A[ini], TAM/comm_sz, MPI_INT, A, TAM/comm_sz, MPI_INT,0, MPI_COMM_WORLD);
     }
 
     if (my_rank==0)
